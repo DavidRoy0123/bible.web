@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Bible Pro v2.0</title>
+    <style>
+        /* Import Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Merriweather:ital,wght@0,300;0,400;1,300&display=swap');
+
+        /* Dynamic CSS Variables for Light/Dark Mode */
+        :root {
+            --bg-main: #F3F4F6;
+            --sidebar-bg: #FFFFFF;
+            --panel-bg: #FFFFFF;
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+            --accent-blue: #3B82F6;
+            --accent-gold: #D4AF37;
+            --border-color: #E5E7EB;
+            --hover-bg: #EFF6FF;
+            --font-ui: 'Inter', sans-serif;
+            --font-bible: 'Merriweather', serif;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+
+        [data-theme="dark"] {
+            --bg-main: #111827;
+            --sidebar-bg: #1F2937;
+            --panel-bg: #1F2937;
+            --text-primary: #F9FAFB;
+            --text-secondary: #9CA3AF;
+            --accent-blue: #60A5FA;
+            --border-color: #374151;
+            --hover-bg: #374151;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Base Setup */
+        * { margin: 0; padding: 0; box-sizing: border-box; transition: background-color 0.3s, color 0.3s; }
+        body {
+            font-family: var(--font-ui); background-color: var(--bg-main); color: var(--text-primary);
+            display: flex; height: 100vh; overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px; background-color: var(--sidebar-bg); border-right: 1px solid var(--border-color);
+            display: flex; flex-direction: column; padding: 2rem 1.5rem; z-index: 10;
+        }
+        .logo {
+            font-size: 1.5rem; font-weight: 600; color: var(--accent-blue);
+            margin-bottom: 2rem; display: flex; align-items: center; gap: 10px;
+        }
+        .nav-btn {
+            background: none; border: none; padding: 1rem; margin-bottom: 0.5rem;
+            text-align: left; font-size: 1rem; font-family: var(--font-ui); font-weight: 500;
+            color: var(--text-secondary); cursor: pointer; border-radius: 10px;
+            display: flex; align-items: center; gap: 12px;
+        }
+        .nav-btn:hover { background-color: var(--hover-bg); color: var(--text-primary); }
+        .nav-btn.active { background-color: var(--accent-blue); color: white; }
+        
+        /* Theme Toggle */
+        .theme-toggle {
+            margin-top: auto; padding: 1rem; background: var(--bg-main); border: 1px solid var(--border-color);
+            border-radius: 10px; color: var(--text-primary); cursor: pointer; font-family: var(--font-ui);
+            font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 8px;
+        }
+
+        /* Main Content & Animations */
+        .main-content { flex: 1; padding: 3rem; overflow-y: auto; }
+        .section { display: none; animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .section.active { display: block; }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Select Dropdowns */
+        .controls { margin-bottom: 2rem; }
+        select {
+            padding: 0.8rem 1.2rem; font-size: 1rem; border: 1px solid var(--border-color);
+            border-radius: 10px; font-family: var(--font-ui); background-color: var(--panel-bg);
+            color: var(--text-primary); cursor: pointer; outline: none; min-width: 250px;
+            box-shadow: var(--shadow);
+        }
+
+        /* Content Panels */
+        .panel {
+            background: var(--panel-bg); border-radius: 16px; box-shadow: var(--shadow);
+            overflow: hidden; margin-bottom: 2rem;
+        }
+        .panel-body { padding: 3rem; }
+        
+        /* "Photos made of Code" (CSS Backgrounds) */
+        .css-photo-header { height: 150px; position: relative; }
+        .bg-genesis { background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 99%, #FECFEF 100%); }
+        .bg-psalms { background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%); }
+        .bg-john { background: linear-gradient(to right, #fa709a 0%, #fee140 100%); }
+        .bg-matthew { background: linear-gradient(to top, #a18cd1 0%, #fbc2eb 100%); }
+        .bg-romans { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); }
+
+        /* Typography */
+        h1 { font-size: 2.5rem; margin-bottom: 0.5rem; color: var(--text-primary); }
+        .subtitle { color: var(--text-secondary); margin-bottom: 2rem; font-size: 1.1rem; }
+        .bible-text { font-family: var(--font-bible); font-size: 1.25rem; line-height: 2.2; color: var(--text-primary); }
+        .verse-num { font-size: 0.75rem; vertical-align: super; color: var(--accent-gold); margin-right: 6px; font-weight: bold; font-family: var(--font-ui); }
+
+        /* AI Study Grid */
+        .ai-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem; }
+        .ai-card {
+            background: var(--bg-main); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;
+            border-left: 4px solid var(--accent-blue);
+        }
+        .ai-card h4 { font-size: 0.85rem; text-transform: uppercase; color: var(--accent-blue); margin-bottom: 0.5rem; letter-spacing: 1px; }
+        .ai-card p { line-height: 1.7; color: var(--text-primary); }
+
+        /* Loading Animation */
+        .loader-container { display: none; flex-direction: column; align-items: center; padding: 3rem; }
+        .loader {
+            width: 40px; height: 40px; border: 4px solid var(--border-color);
+            border-top-color: var(--accent-blue); border-radius: 50%;
+            animation: spin 1s linear infinite; margin-bottom: 1rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Dashboard Grid */
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+        .card {
+            background: var(--panel-bg); border-radius: 12px; padding: 1.5rem;
+            border: 1px solid var(--border-color); text-decoration: none; display: block;
+        }
+        .card:hover { border-color: var(--accent-blue); transform: translateY(-5px); box-shadow: var(--shadow); }
+        .card-title { font-weight: 600; font-size: 1.2rem; margin-bottom: 0.5rem; color: var(--text-primary); }
+        .card-desc { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+            Bible Pro
+        </div>
+        <button class="nav-btn active" onclick="switchTab('dashboard')">🏠 Dashboard</button>
+        <button class="nav-btn" onclick="switchTab('read')">📖 Read Scripture</button>
+        <button class="nav-btn" onclick="switchTab('ai')">✨ AI Assistant</button>
+        <button class="nav-btn" onclick="switchTab('links')">🔗 Web Links</button>
+
+        <button class="theme-toggle" onclick="toggleTheme()">
+            <span id="theme-icon">🌙</span> <span id="theme-text">Dark Mode</span>
+        </button>
+    </div>
+
+    <div class="main-content">
+        
+        <section id="dashboard-sec" class="section active">
+            <h1>Welcome Back</h1>
+            <p class="subtitle">Your personal AI-powered scripture study studio.</p>
+            
+            <div class="panel">
+                <div class="css-photo-header bg-matthew"></div>
+                <div class="panel-body">
+                    <h3 style="margin-bottom: 1rem; color: var(--accent-blue);">Verse of the Day</h3>
+                    <div class="bible-text">"Blessed are the pure in heart, for they will see God."</div>
+                    <p style="margin-top: 1rem; color: var(--text-secondary); font-weight: 600;">— Matthew 5:8</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="read-sec" class="section">
+            <h1>Read Scripture</h1>
+            <div class="controls">
+                <select id="read-select" onchange="updateReadPane()">
+                    <option value="gen1">Genesis 1</option>
+                    <option value="psalm23">Psalm 23</option>
+                    <option value="matthew5">Matthew 5:1-10</option>
+                    <option value="john1">John 1:1-5</option>
+                    <option value="romans8">Romans 8:37-39</option>
+                </select>
+            </div>
+            <div class="panel">
+                <div id="read-header" class="css-photo-header bg-genesis"></div>
+                <div class="panel-body">
+                    <h2 id="read-title" style="margin-bottom: 2rem;"></h2>
+                    <div id="read-content" class="bible-text"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="ai-sec" class="section">
+            <h1>AI Study Assistant</h1>
+            <p class="subtitle">Select a passage to generate deep theological and historical insights.</p>
+            
+            <div class="controls">
+                <select id="ai-select" onchange="fetchAIInsight()">
+                    <option value="gen1">Genesis 1</option>
+                    <option value="psalm23">Psalm 23</option>
+                    <option value="matthew5">Matthew 5:1-10</option>
+                    <option value="john1">John 1:1-5</option>
+                    <option value="romans8">Romans 8:37-39</option>
+                </select>
+            </div>
+
+            <div id="ai-loader" class="loader-container">
+                <div class="loader"></div>
+                <p>Analyzing original text and historical context...</p>
+            </div>
+
+            <div id="ai-content-area" class="ai-grid">
+                <div class="panel">
+                    <div class="panel-body">
+                        <h2 id="ai-passage-title" style="margin-bottom: 1.5rem;"></h2>
+                        <div id="ai-scripture-content" class="bible-text" style="font-size: 1.1rem; line-height: 1.8;"></div>
+                    </div>
+                </div>
+
+                <div class="panel" style="background: transparent; box-shadow: none;">
+                    <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 8px;">
+                        ✨ Generated Insights
+                    </h3>
+                    <div class="ai-card">
+                        <h4>Historical Context</h4>
+                        <p id="ai-context"></p>
+                    </div>
+                    <div class="ai-card">
+                        <h4>Original Language</h4>
+                        <p id="ai-language"></p>
+                    </div>
+                    <div class="ai-card">
+                        <h4>Modern Application</h4>
+                        <p id="ai-application"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="links-sec" class="section">
+            <h1>Study Resources</h1>
+            <p class="subtitle">Trusted external platforms to continue your study.</p>
+            <div class="grid-3">
+                <a href="https://www.bible.com/" target="_blank" class="card">
+                    <div class="card-title">YouVersion App</div>
+                    <div class="card-desc">The #1 mobile Bible app with reading plans, community features, and audio.</div>
+                </a>
+                <a href="https://www.biblegateway.com/" target="_blank" class="card">
+                    <div class="card-title">Bible Gateway</div>
+                    <div class="card-desc">The best search engine for comparing different Bible translations side-by-side.</div>
+                </a>
+                <a href="https://www.blueletterbible.org/" target="_blank" class="card">
+                    <div class="card-title">Blue Letter Bible</div>
+                    <div class="card-desc">Advanced tools for digging into the original Greek and Hebrew root words.</div>
+                </a>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // Expanded Database with CSS Classes for "Photos"
+        const bibleData = {
+            gen1: {
+                title: "Genesis 1", class: "bg-genesis",
+                text: "<span class='verse-num'>1</span>In the beginning God created the heavens and the earth. <span class='verse-num'>2</span>Now the earth was formless and empty...",
+                ai: {
+                    context: "Written to establish Yahweh as the sole creator, contrasting with chaotic polytheistic creation myths.",
+                    language: "'Bara' (create) is a Hebrew verb used exclusively with God as the subject.",
+                    application: "God can bring order and light into the chaotic or dark seasons of our own lives."
+                }
+            },
+            psalm23: {
+                title: "Psalm 23", class: "bg-psalms",
+                text: "<span class='verse-num'>1</span>The Lord is my shepherd, I lack nothing. <span class='verse-num'>2</span>He makes me lie down in green pastures...",
+                ai: {
+                    context: "Written by David, flipping the cultural idea of kings as shepherds to declare God as his true King.",
+                    language: "Notice the pronoun shift in verse 4, from talking ABOUT God ('He') to talking TO God ('You').",
+                    application: "In our darkest valleys, theology (knowing about God) must turn into intimacy (talking to God)."
+                }
+            },
+            matthew5: {
+                title: "Matthew 5:1-10", class: "bg-matthew",
+                text: "<span class='verse-num'>3</span>Blessed are the poor in spirit, for theirs is the kingdom of heaven. <span class='verse-num'>4</span>Blessed are those who mourn, for they will be comforted...",
+                ai: {
+                    context: "The start of the Sermon on the Mount. Jesus is laying out the upside-down values of His new Kingdom.",
+                    language: "The Greek word 'Makarios' (Blessed) implies a deep, supreme inner joy and divine favor, not just surface-level happiness.",
+                    application: "True human flourishing comes not from power or wealth, but from humility, mercy, and peacemaking."
+                }
+            },
+            john1: {
+                title: "John 1:1-5", class: "bg-john",
+                text: "<span class='verse-num'>1</span>In the beginning was the Word, and the Word was with God, and the Word was God...",
+                ai: {
+                    context: "John intentionally mirrors the opening of Genesis 1, bridging Jewish theology and Greek philosophy.",
+                    language: "The Greek term 'Logos' (The Word) means the divine reason that orders the universe.",
+                    application: "The universe is not random; there is an intelligent, loving design behind reality."
+                }
+            },
+            romans8: {
+                title: "Romans 8:37-39", class: "bg-romans",
+                text: "<span class='verse-num'>37</span>No, in all these things we are more than conquerors through him who loved us. <span class='verse-num'>38</span>For I am convinced that neither death nor life, neither angels nor demons...",
+                ai: {
+                    context: "Written by Paul to the church in Rome, assuring them of absolute security in Christ despite severe persecution.",
+                    language: "'More than conquerors' comes from the Greek 'hupernikao'—meaning a sweeping, overwhelming victory.",
+                    application: "No external circumstance, no matter how severe, can sever the believer from God's love."
+                }
+            }
+        };
+
+        // Tab Navigation
+        function switchTab(tabId) {
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(tabId + '-sec').classList.add('active');
+            
+            if(tabId === 'read') updateReadPane();
+            if(tabId === 'ai') fetchAIInsight(); // Trigger animation on tab open
+        }
+
+        // Read Pane
+        function updateReadPane() {
+            const val = document.getElementById('read-select').value;
+            const data = bibleData[val];
+            document.getElementById('read-title').innerText = data.title;
+            document.getElementById('read-content').innerHTML = data.text;
+            document.getElementById('read-header').className = `css-photo-header ${data.class}`;
+        }
+
+        // AI Simulated Loading
+        function fetchAIInsight() {
+            const val = document.getElementById('ai-select').value;
+            const data = bibleData[val];
+            
+            // Show Loader, Hide Content
+            document.getElementById('ai-loader').style.display = 'flex';
+            document.getElementById('ai-content-area').style.display = 'none';
+
+            // Simulate 1.5s API Call
+            setTimeout(() => {
+                document.getElementById('ai-passage-title').innerText = data.title;
+                document.getElementById('ai-scripture-content').innerHTML = data.text;
+                document.getElementById('ai-context').innerText = data.ai.context;
+                document.getElementById('ai-language').innerText = data.ai.language;
+                document.getElementById('ai-application').innerText = data.ai.application;
+                
+                // Hide Loader, Show Content
+                document.getElementById('ai-loader').style.display = 'none';
+                document.getElementById('ai-content-area').style.display = 'grid';
+            }, 1200);
+        }
+
+        // Dark Mode Logic
+        function toggleTheme() {
+            const body = document.body;
+            const isDark = body.getAttribute('data-theme') === 'dark';
+            
+            if (isDark) {
+                body.removeAttribute('data-theme');
+                document.getElementById('theme-icon').innerText = '🌙';
+                document.getElementById('theme-text').innerText = 'Dark Mode';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                document.getElementById('theme-icon').innerText = '☀️';
+                document.getElementById('theme-text').innerText = 'Light Mode';
+            }
+        }
+
+        // Init
+        window.onload = () => { updateReadPane(); };
+    </script>
+</body>
+</html>
