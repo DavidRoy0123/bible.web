@@ -1,0 +1,70 @@
+// ⚠️ Note: In a real app, you would keep these keys hidden on a secure server, 
+// not hardcoded in the frontend, but this shows the exact logic!
+const BIBLE_API_KEY = "your_api_bible_key_here";
+const GEMINI_API_KEY = "your_gemini_api_key_here";
+
+// We make the function 'async' so it can wait for the internet to respond
+async function fetchRealAIInsight(passageReference) {
+    try {
+        // 1. SHOW LOADING STATE
+        document.getElementById('ai-loader').style.display = 'flex';
+        document.getElementById('ai-content-area').style.display = 'none';
+
+        // ==========================================
+        // STEP 1: FETCH REAL BIBLE TEXT (API.Bible)
+        // ==========================================
+        const bibleResponse = await fetch(`https://api.scripture.api.bible/v1/bibles/YOUR_BIBLE_ID/search?query=${passageReference}`, {
+            method: 'GET',
+            headers: { 'api-key': BIBLE_API_KEY }
+        });
+        
+        const bibleData = await bibleResponse.json();
+        const scriptureText = bibleData.data.verses[0].text; 
+
+        // Update the UI with the real scripture
+        document.getElementById('ai-scripture-content').innerHTML = scriptureText;
+        document.getElementById('ai-passage-title').innerText = passageReference;
+
+        // ==========================================
+        // STEP 2: SEND TO GEMINI API FOR INSIGHTS
+        // ==========================================
+        // We write a strict prompt telling the AI exactly how to format its answer
+        const prompt = `
+            Analyze this Bible passage: "${scriptureText}". 
+            Return a JSON object with exactly these three keys: 
+            "context" (Historical context), 
+            "language" (Original Hebrew/Greek insights), 
+            "application" (Modern life application).
+        `;
+
+        const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }]
+            })
+        });
+
+        const geminiData = await geminiResponse.json();
+        
+        // Extract the AI's text and parse the JSON
+        const aiRawText = geminiData.candidates[0].content.parts[0].text;
+        const aiParsed = JSON.parse(aiRawText.replace(/```json|```/g, '')); // Cleans up markdown
+
+        // ==========================================
+        // STEP 3: UPDATE THE USER INTERFACE
+        // ==========================================
+        document.getElementById('ai-context').innerText = aiParsed.context;
+        document.getElementById('ai-language').innerText = aiParsed.language;
+        document.getElementById('ai-application').innerText = aiParsed.application;
+
+        // HIDE LOADING, SHOW CONTENT
+        document.getElementById('ai-loader').style.display = 'none';
+        document.getElementById('ai-content-area').style.display = 'grid';
+
+    } catch (error) {
+        console.error("Error fetching data:", error);
+        alert("Something went wrong connecting to the AI. Please try again.");
+        document.getElementById('ai-loader').style.display = 'none';
+    }
+}
